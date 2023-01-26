@@ -159,9 +159,19 @@ class ProblemGenerator:
     def __init__(self, level):
         self.level = level
 
+    def get_dividers(self, number):
+        from math import sqrt, floor
+        dividers = [1]
+        for div in range(2, floor(sqrt(number))):
+            if number % div == 0:
+                dividers.append(div)
+        dividers.append(number)
+        return dividers
+
     def problem_generator(self):
         import random
         level_requirements = {1: 10, 2: 25, 3: 40, 4: 50}
+        divmult_chars = 0
         with open('txt/Symbols.txt', encoding='utf-8') as f:
             read_data = list(map(str.strip, f.readlines()))
             math_symbols = read_data[self.level - 1]
@@ -169,9 +179,18 @@ class ProblemGenerator:
             for action_number in range(self.level):
                 randmath_symbol = str(
                     math_symbols.replace(' ', '')[random.randint(0, len(math_symbols.replace(' ', '')) - 1)])
-                action = (str(random.randint(1, level_requirements[self.level])) +
-                          randmath_symbol +
-                          str(random.randint(1, level_requirements[self.level])))
+                if randmath_symbol in ['/', '*']:
+                    divmult_chars += 1
+                    if divmult_chars > 1:
+                        randmath_symbol = random.choice(['+', '-'])
+                if randmath_symbol == '/':
+                    number = random.randint(1, level_requirements[self.level])
+                    action = (str(number) + randmath_symbol + str(random.choice(self.get_dividers(number))))
+                else:
+                    action = (str(random.randint(1, level_requirements[self.level])) +
+                              randmath_symbol +
+                              str(random.randint(1, level_requirements[self.level])))
+                randmath_symbol = random.choice(['+', '-'])
                 if self.level == 4:
                     bracket_chance = random.randint(1, 10)
                     if str(bracket_chance) in '1 2 3':
